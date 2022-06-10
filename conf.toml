@@ -1,0 +1,10 @@
+#文件保存路径
+download_path="/home/yang/Videos/"
+
+#个人主页链接
+url="https://www.tiktok.com/@yuki_sixxxxxxt.lovejess"
+
+
+[grpc]
+addr="127.0.0.1"
+port="9090"

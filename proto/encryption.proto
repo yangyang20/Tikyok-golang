@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package tiktok;
+
+option go_package = "./";
+
+// The greeting service definition.
+service TikTok {
+  // Sends a greeting
+  rpc SayEncryption (EncryptionRequest) returns (EncryptionReply) {}
+}
+
+// The request message containing the user's name.
+message EncryptionRequest {
+  string ttParams = 1;
+}
+
+// The response message containing the greetings
+message EncryptionReply {
+  string ttParamsStr = 1;
+}
