@@ -1,5 +1,16 @@
 package types
 
+type Config struct {
+	DownloadPath string   `toml:"download_path"`
+	Url          string   `toml:"url"`
+	Grpc         GrpcConf `toml:"grpc"`
+	IsUHD        bool     `toml:"isUHD"`
+}
+type GrpcConf struct {
+	Addr string
+	Port string
+}
+
 type VideoItemList struct {
 	ItemList   []VideoItem `json:"itemList"`
 	HasMore    bool        `json:"hasMore"`
@@ -19,9 +30,10 @@ type VideoDetail struct {
 }
 
 type AwemeDetails struct {
-	Desc   string      `json:"desc"`
-	Video  AwemeVideo  `json:"video"`
-	Author AwemeAuthor `json:"author"`
+	Desc    string      `json:"desc"`
+	Video   AwemeVideo  `json:"video"`
+	Author  AwemeAuthor `json:"author"`
+	AwemeId string      `json:"aweme_id"`
 }
 
 type AwemeVideo struct {
@@ -34,6 +46,7 @@ type AwemeAuthor struct {
 
 type AwemePlayAddr struct {
 	UrlList []string `json:"url_list"`
+	Uri     string   `json:"uri"`
 }
 
 type HomePageContent struct {
@@ -45,4 +58,11 @@ type HomePageContent struct {
 			Cursor string `json:"cursor"`
 		} `json:"user-post"`
 	} `json:"ItemList"`
+}
+
+type Video struct {
+	DownUrl string
+	Name    string
+	//视频信息
+	Uri string
 }

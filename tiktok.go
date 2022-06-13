@@ -27,35 +27,20 @@ type Tiktok struct {
 	videoIdList []string
 	msToken     string
 	Nickname    string
-	videoList   []video
+	videoList   []types.Video
 	secUid      string
 	downloadDir string
 	cookies     []*http.Cookie
 }
-type video struct {
-	downUrl string
-	name    string
-}
-
-type Config struct {
-	DownloadPath string   `toml:"download_path"`
-	Url          string   `toml:"url"`
-	Grpc         grpcconf `toml:"grpc"`
-}
-type grpcconf struct {
-	Addr string
-	Port string
-}
 
 var client *http.Client
-var config *Config
+var config *types.Config
 
 func init() {
 
 	if _, err := toml.DecodeFile("./conf.toml", &config); err != nil {
 		panic(err)
 	}
-
 	var uri *url.URL
 	var gCurCookieJar *cookiejar.Jar
 	uri, _ = url.Parse("http://127.0.0.1:1087")
@@ -188,11 +173,12 @@ func (t *Tiktok) setVideoIds(cursor string, ch chan int) {
 	if videoItemList.StatusCode == 0 {
 		if videoItemList.HasMore {
 			go t.setVideoIds(videoItemList.Cursor, ch)
-		} else {
-			ch <- 1
 		}
 		for _, v := range videoItemList.ItemList {
 			t.videoIdList = append(t.videoIdList, v.Id)
+		}
+		if !videoItemList.HasMore {
+			ch <- 1
 		}
 	} else {
 		fmt.Println(string(html))
@@ -261,26 +247,26 @@ func (t *Tiktok) setVideoList(videoIds string, ch chan int) {
 		if t.Nickname == "" {
 			t.Nickname = detail.Author.Nickname
 		}
-		t.videoList = append(t.videoList, video{
-			downUrl: downUrl,
-			name:    videoName,
+		t.videoList = append(t.videoList, types.Video{
+			DownUrl: downUrl,
+			Name:    videoName,
 		})
 	}
 	defer resp.Body.Close()
 	ch <- 1
 }
 
-func (t *Tiktok) download(v video, ch chan int) {
-	fmt.Println("开始下载：", v.name)
-	resp := t.httpRequest(v.downUrl, nil)
-	f, err := os.Create(t.downloadDir + "/" + v.name + ".mp4")
+func (t *Tiktok) download(v types.Video, ch chan int) {
+	fmt.Println("开始下载：", v.Name)
+	resp := t.httpRequest(v.DownUrl, nil)
+	f, err := os.Create(t.downloadDir + "/" + v.Name + ".mp4")
 	if err != nil {
 		ch <- 0
 		panic(err)
 	}
 	io.Copy(f, resp.Body)
 	defer resp.Body.Close()
-	defer fmt.Println("下载完成", v.name)
+	defer fmt.Println("下载完成", v.Name)
 	ch <- 1
 }
 
@@ -289,7 +275,6 @@ func (t *Tiktok) DownloadVideo() {
 	c := make(chan int, 1)
 	t.setVideoIds("0", c)
 	<-c
-	fmt.Println("666")
 	if len(t.videoIdList) == 0 {
 		fmt.Println("没有获取到videoIdList")
 		return
